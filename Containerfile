@@ -8,8 +8,12 @@ ARG norvv=0
 
 RUN dnf install -y 'dnf-command(config-manager)'
 
-RUN dnf --installroot=/rootfs --releasever=${dnf_bootstrap_releasever} \
+RUN if [ "${norvv}" -eq 1 ]; then \
+        norvv_repo_arg="--repofrompath=norvv-repo,${dnf_bootstrap_norvv_repo}"; \
+    fi; \
+    dnf --installroot=/rootfs --disablerepo '*' --releasever=${dnf_bootstrap_releasever} \
     --setopt=install_weak_deps=False --nodocs --forcearch=${arch} --nogpgcheck \
+    ${norvv_repo_arg} \
     --repofrompath=bootstrap-repo,${dnf_bootstrap_repo} -x systemd -x dbus -x polkit \
     install -y dnf vim-minimal && \
     dnf clean all --installroot=/rootfs
